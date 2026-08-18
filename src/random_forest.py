@@ -1,3 +1,5 @@
+# first random forest model
+
 from linear_regression import X_train_all, X_val_all, X_test_all, y_train, y_val, y_test
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
@@ -26,6 +28,3 @@ print(f"MSE: ${mse:,.2f}")
 print(f"RMSE: ${rmse:,.2f}")
 print(f"MAE: ${mae:,.2f}")
 print(f"R²: {r2:.2f}")
-
-# test predictions
-y_pred = model.predict(X_test_all)

@@ -1,4 +1,6 @@
-# edited random forest model
+# final model
+
+# final model
 
 import pandas as pd
 import numpy as np
@@ -14,31 +16,18 @@ df = pd.read_csv("26f-data-member-challenge/data/survey.csv")
 df = df.dropna(subset=["annual_salary_usd"])
 df = df.drop(columns=["ResponseId", "Currency"])
 
-
-# age ordinal
+# age median
 age_map = {
-    "18-24 years old": 1,
-    "25-34 years old": 2,
-    "35-44 years old": 3,
-    "45-54 years old": 4,
-    "55-64 years old": 5,
-    "65 years or older": 6,
+    "18-24 years old": 21,
+    "25-34 years old": 29.5,
+    "35-44 years old": 39.5,
+    "45-54 years old": 49.5,
+    "55-64 years old": 59.5,
+    "65 years or older": 70,
     "Prefer not to say": np.nan
 }
-df["Age"] = df["Age"].map(age_map)
 
-# edlevel ordinal
-education_map = {
-    "Primary/elementary school": 1,
-    "Secondary school (e.g. American high school, German Realschule or Gymnasium, etc.)": 2,
-    "Some college/university study without earning a degree": 3,
-    "Associate degree (A.A., A.S., etc.)": 4,
-    "Bachelor's degree (B.A., B.S., B.Eng., etc.)": 5,
-    "Master's degree (M.A., M.S., M.Eng., MBA, etc.)": 6,
-    "Professional degree (JD, MD, Ph.D, Ed.D, etc.)": 7,
-    "Other (please specify):": np.nan
-}
-df["EdLevel"] = df["EdLevel"].map(education_map)
+df["Age"] = df["Age"].map(age_map)
 
 # orgsize ordinal
 orgsize_map = {
@@ -52,7 +41,21 @@ orgsize_map = {
     "10,000 or more employees": 8,
     "I don't know": np.nan
 }
+
 df["OrgSize"] = df["OrgSize"].map(orgsize_map)
+
+# edlevel ordinal
+education_map = {
+    "Primary/elementary school": 1,
+    "Secondary school (e.g. American high school, German Realschule or Gymnasium, etc.)": 2,
+    "Some college/university study without earning a degree": 3,
+    "Associate degree (A.A., A.S., etc.)": 4,
+    "Bachelor's degree (B.A., B.S., B.Eng., etc.)": 5,
+    "Master's degree (M.A., M.S., M.Eng., MBA, etc.)": 6,
+    "Professional degree (JD, MD, Ph.D, Ed.D, etc.)": 7,
+    "Other (please specify):": np.nan
+}
+df["EdLevel"] = df["EdLevel"].map(education_map)
 
 # ICorPM Binary
 icorpm_map = {
@@ -82,9 +85,7 @@ binary_columns = [
 ]
 
 categorical_columns = [
-    "Employment",
     "DevType",
-    "RemoteWork",
     "Industry",
     "Country",
 ]
@@ -108,11 +109,23 @@ for col in binary_columns:
     X_val[col] = X_val[col].fillna(mode)
     X_test[col] = X_test[col].fillna(mode)
 
-# industry, language, database
 for col in categorical_columns:
     X_train[col] = X_train[col].fillna("Unknown")
     X_val[col] = X_val[col].fillna("Unknown")
     X_test[col] = X_test[col].fillna("Unknown")
+
+for col in multi_input_columns:
+    X_train[col] = X_train[col].fillna("Unknown")
+    X_val[col] = X_val[col].fillna("Unknown")
+    X_test[col] = X_test[col].fillna("Unknown")
+
+# make countries that appear less than 100 times "Other"
+country_counts = X_train["Country"].value_counts()
+common_countries = country_counts[country_counts >= 100].index
+
+X_train["Country"] = X_train["Country"].apply(lambda x: x if x in common_countries else "Other")
+X_val["Country"] = X_val["Country"].apply(lambda x: x if x in common_countries else "Other")
+X_test["Country"] = X_test["Country"].apply(lambda x: x if x in common_countries else "Other")
 
 
 # use encoder for transforming categorical variables into numerical values
@@ -125,7 +138,6 @@ encoder = OneHotEncoder(
 X_train_categorical = encoder.fit_transform(X_train[categorical_columns])
 X_val_categorical = encoder.transform(X_val[categorical_columns])
 X_test_categorical = encoder.transform(X_test[categorical_columns])
-
 
 # organize the language/database columns into separate multi input columns
 def create_multi_input_columns(train, val, test, column, prefix):
@@ -195,7 +207,7 @@ X_train_num = X_train[numerical_columns + binary_columns].values
 X_val_num = X_val[numerical_columns + binary_columns].values
 X_test_num = X_test[numerical_columns + binary_columns].values
 
-# combine all columns into one train/test set
+# combine all columns into one train/val/test set
 X_train_all = hstack([
     X_train_num,
     X_train_categorical,

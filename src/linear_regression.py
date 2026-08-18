@@ -1,3 +1,5 @@
+# linear regression model
+
 import pandas as pd
 import numpy as np
 from scipy.sparse import hstack
@@ -54,7 +56,7 @@ df["OrgSize"] = df["OrgSize"].map(orgsize_map)
 
 # ICorPM Binary
 icorpm_map = {
-    "Individual contributer": 0,
+    "Individual contributor": 0,
     "People manager": 1
 }
 df["ICorPM"] = df["ICorPM"].map(icorpm_map)
@@ -218,12 +220,6 @@ X_test_all = hstack([
 model = LinearRegression()
 model.fit(X_train_all, y_train)
 
-# model coefficients
-print("Model Coefficients:")
-for i in range(12):
-    print(f"w{i+1}: {model.coef_[i]:.2f}")
-print(f"b: {model.intercept_:.2f}")
-
 # validation predictions
 val_pred = model.predict(X_val_all)
 
@@ -239,5 +235,4 @@ print(f"RMSE: ${rmse:,.2f}")
 print(f"MAE: ${mae:,.2f}")
 print(f"R²: {r2:.2f}")
 
-# test predictions
-y_pred = model.predict(X_test_all)
+print(X_train[["WorkExp","YearsCode"]].corr())
