@@ -16,3 +16,5 @@ print(df["EdLevel"].unique())
 print(df["OrgSize"].unique())
 
 print(df["ICorPM"].unique())
+
+print(df["RemoteWork"].unique())

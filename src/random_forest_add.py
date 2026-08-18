@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from scipy.sparse import hstack
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 
@@ -10,7 +10,7 @@ df = pd.read_csv("26f-data-member-challenge/data/survey.csv")
 
 # remove na from salary column, remove unnecessary columns
 df = df.dropna(subset=["annual_salary_usd"])
-df = df.drop(columns=["ResponseId", "RemoteWork", "Currency"])
+df = df.drop(columns=["ResponseId", "Currency"])
 
 
 # age ordinal
@@ -82,6 +82,7 @@ binary_columns = [
 categorical_columns = [
     "Employment",
     "DevType",
+    "RemoteWork",
     "Industry",
     "Country",
 ]
@@ -214,20 +215,18 @@ X_test_all = hstack([
     test_databases.values
 ])
 
-# create the model
-model = LinearRegression()
+model = RandomForestRegressor(
+    n_estimators=200,
+    min_samples_leaf=2,
+    random_state=42,
+    n_jobs=-1
+)
+
+# use same preprocessed columns
 model.fit(X_train_all, y_train)
 
-# model coefficients
-print("Model Coefficients:")
-for i in range(12):
-    print(f"w{i+1}: {model.coef_[i]:.2f}")
-print(f"b: {model.intercept_:.2f}")
-
-# validation predictions
 val_pred = model.predict(X_val_all)
 
-# perfomance metrics
 mse = mean_squared_error(y_val, val_pred)
 rmse = np.sqrt(mse)
 mae = mean_absolute_error(y_val, val_pred)
@@ -238,6 +237,3 @@ print(f"MSE: ${mse:,.2f}")
 print(f"RMSE: ${rmse:,.2f}")
 print(f"MAE: ${mae:,.2f}")
 print(f"R²: {r2:.2f}")
-
-# test predictions
-y_pred = model.predict(X_test_all)
