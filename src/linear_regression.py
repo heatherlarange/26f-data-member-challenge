@@ -16,27 +16,15 @@ df = df.dropna(subset=["annual_salary_usd"])
 df = df.drop(columns=["ResponseId", "RemoteWork", "Currency",])
 
 
-# age ordinal (first attempt)
-# age_map = {
-    #"18-24 years old": 1,
-    #"25-34 years old": 2,
-    #"35-44 years old": 3,
-    #"45-54 years old": 4,
-    #"55-64 years old": 5,
-    #"65 years or older": 6,
-    #"Prefer not to say": 7
-#}
-#df["Age"] = df["Age"].map(age_map)
-
-# age midpoint (second try)
+# age ordinal
 age_map = {
-    "18-24 years old": 21,
-    "25-34 years old": 29.5,
-    "35-44 years old": 39.5,
-    "45-54 years old": 49.5,
-    "55-64 years old": 59.5,
-    "65 years or older": 70,
-    "Prefer not to say": np.nan
+    "18-24 years old": 1,
+    "25-34 years old": 2,
+    "35-44 years old": 3,
+    "45-54 years old": 4,
+    "55-64 years old": 5,
+    "65 years or older": 6,
+    "Prefer not to say": 7
 }
 df["Age"] = df["Age"].map(age_map)
 
@@ -221,6 +209,13 @@ print(f"b: {model.intercept_:.2f}")
 y_pred = model.predict(X_test_all)
 
 # perfomance metrics
+mse = mean_squared_error(y_test, y_pred)
+rmse = np.sqrt(mse)
+mae = mean_absolute_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
 print("Performance on Test Set:")
-print(f"Mean Squared Error (MSE): {mean_squared_error(y_test, y_pred):.2f}")
-print(f"R² Score: {r2_score(y_test, y_pred):.2f}")
+print(f"MSE: ${mse:,.2f}")
+print(f"RMSE: ${rmse:,.2f}")
+print(f"MAE: ${mae:,.2f}")
+print(f"R²: {r2:.2f}")
