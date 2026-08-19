@@ -10,6 +10,12 @@ from sklearn.model_selection import train_test_split
 
 df = pd.read_csv("26f-data-member-challenge/data/survey.csv")
 
+# remove outliers
+df = df[
+    (df["annual_salary_usd"] >= 10000) &
+    (df["annual_salary_usd"] <= 500000)
+]
+
 # remove na from salary column, remove unnecessary columns
 df = df.dropna(subset=["annual_salary_usd"])
 df = df.drop(columns=["ResponseId", "Currency"])
