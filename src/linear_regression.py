@@ -1,4 +1,4 @@
-# linear regression model
+# linear regression model (first attempt)
 
 import pandas as pd
 import numpy as np
@@ -9,19 +9,19 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 
 df = pd.read_csv("26f-data-member-challenge/data/survey.csv")
+df = df.replace("’", "'", regex=True)
 
-# remove outliers
+# remove extremes
 df = df[
-    (df["annual_salary_usd"] >= 10000) &
-    (df["annual_salary_usd"] <= 500000)
+    (df["annual_salary_usd"] >= 5000) &
+    (df["annual_salary_usd"] <= 450000)
 ]
 
-# remove na from salary column, remove unnecessary columns
+# remove na from salary column, filter unnecessary columns
 df = df.dropna(subset=["annual_salary_usd"])
 df = df.drop(columns=["ResponseId", "RemoteWork", "Currency"])
 
-
-# age ordinal
+# convert age ordinal
 age_map = {
     "18-24 years old": 1,
     "25-34 years old": 2,
@@ -29,11 +29,11 @@ age_map = {
     "45-54 years old": 4,
     "55-64 years old": 5,
     "65 years or older": 6,
-    "Prefer not to say": 7
+    "Prefer not to say": np.nan
 }
 df["Age"] = df["Age"].map(age_map)
 
-# edlevel ordinal
+# convert edlevel ordinal
 education_map = {
     "Primary/elementary school": 1,
     "Secondary school (e.g. American high school, German Realschule or Gymnasium, etc.)": 2,
@@ -42,11 +42,11 @@ education_map = {
     "Bachelor's degree (B.A., B.S., B.Eng., etc.)": 5,
     "Master's degree (M.A., M.S., M.Eng., MBA, etc.)": 6,
     "Professional degree (JD, MD, Ph.D, Ed.D, etc.)": 7,
-    "Other (please specify):": 8
+    "Other (please specify):": np.nan
 }
 df["EdLevel"] = df["EdLevel"].map(education_map)
 
-# orgsize ordinal
+# convert orgsize ordinal
 orgsize_map = {
     "Just me - I am a freelancer, sole proprietor, etc.": 1,
     "Less than 20 employees": 2,
@@ -56,11 +56,11 @@ orgsize_map = {
     "1,000 to 4,999 employees": 6,
     "5,000 to 9,999 employees": 7,
     "10,000 or more employees": 8,
-    "I don't know": 9
+    "I don't know": np.nan
 }
 df["OrgSize"] = df["OrgSize"].map(orgsize_map)
 
-# ICorPM Binary
+# convert ICorPM binary
 icorpm_map = {
     "Individual contributor": 0,
     "People manager": 1
@@ -99,8 +99,7 @@ multi_input_columns = [
     "DatabaseHaveWorkedWith"
 ]
 
-
-# fill empty responses w mode/median or unknown
+# fill empty responses w median/mode/unknown/none
 for col in numerical_columns:
     median = X_train[col].median()
     X_train[col] = X_train[col].fillna(median)
@@ -113,12 +112,15 @@ for col in binary_columns:
     X_val[col] = X_val[col].fillna(mode)
     X_test[col] = X_test[col].fillna(mode)
 
-# industry, language, database
 for col in categorical_columns:
     X_train[col] = X_train[col].fillna("Unknown")
     X_val[col] = X_val[col].fillna("Unknown")
     X_test[col] = X_test[col].fillna("Unknown")
 
+for col in multi_input_columns:
+    X_train[col] = X_train[col].fillna("None")
+    X_val[col] = X_val[col].fillna("None")
+    X_test[col] = X_test[col].fillna("None")
 
 # use encoder for transforming categorical variables into numerical values
 encoder = OneHotEncoder(
@@ -131,12 +133,11 @@ X_train_categorical = encoder.fit_transform(X_train[categorical_columns])
 X_val_categorical = encoder.transform(X_val[categorical_columns])
 X_test_categorical = encoder.transform(X_test[categorical_columns])
 
-
-# organize the language/database columns into separate multi input columns
+# engineer the language/database columns into separate multi input columns
 def create_multi_input_columns(train, val, test, column, prefix):
-    train_values = train[column].fillna("Unknown").str.split(";")
-    val_values = val[column].fillna("Unknown").str.split(";")
-    test_values = test[column].fillna("Unknown").str.split(";")
+    train_values = train[column].fillna("None").str.split(";")
+    val_values = val[column].fillna("None").str.split(";")
+    test_values = test[column].fillna("None").str.split(";")
     categories = sorted(
         set(
             value.strip()
@@ -181,11 +182,19 @@ train_databases, val_databases, test_databases = create_multi_input_columns(
     "Database_"
 )
 
+# give val/test data the same format as training, fill new/missing info with 0
+val_languages = val_languages.reindex(
+    columns=train_languages.columns,
+    fill_value=0
+)
+val_databases = val_databases.reindex(
+    columns=train_databases.columns,
+    fill_value=0
+)
 test_languages = test_languages.reindex(
     columns=train_languages.columns,
     fill_value=0
 )
-
 test_databases = test_databases.reindex(
     columns=train_databases.columns,
     fill_value=0
@@ -200,7 +209,7 @@ X_train_num = X_train[numerical_columns + binary_columns].values
 X_val_num = X_val[numerical_columns + binary_columns].values
 X_test_num = X_test[numerical_columns + binary_columns].values
 
-# combine all columns into one train/test set
+# combine all columns into one train/val/test set
 X_train_all = hstack([
     X_train_num,
     X_train_categorical,
@@ -240,5 +249,3 @@ print(f"MSE: ${mse:,.2f}")
 print(f"RMSE: ${rmse:,.2f}")
 print(f"MAE: ${mae:,.2f}")
 print(f"R²: {r2:.2f}")
-
-print(X_train[["WorkExp","YearsCode"]].corr())
