@@ -242,14 +242,31 @@ model = RandomForestRegressor(
 # use same preprocessed columns
 model.fit(X_train_all, y_train)
 
+# validation predictions
 val_pred = model.predict(X_val_all)
 
+# perfomance metrics
 mse = mean_squared_error(y_val, val_pred)
 rmse = np.sqrt(mse)
 mae = mean_absolute_error(y_val, val_pred)
 r2 = r2_score(y_val, val_pred)
 
 print("Performance on Validation Set:")
+print(f"MSE: ${mse:,.2f}")
+print(f"RMSE: ${rmse:,.2f}")
+print(f"MAE: ${mae:,.2f}")
+print(f"R²: {r2:.2f}")
+
+# test predictions
+test_pred = model.predict(X_test_all)
+
+# perfomance metrics
+mse = mean_squared_error(y_test, test_pred)
+rmse = np.sqrt(mse)
+mae = mean_absolute_error(y_test, test_pred)
+r2 = r2_score(y_test, test_pred)
+
+print("Performance on Test Set:")
 print(f"MSE: ${mse:,.2f}")
 print(f"RMSE: ${rmse:,.2f}")
 print(f"MAE: ${mae:,.2f}")

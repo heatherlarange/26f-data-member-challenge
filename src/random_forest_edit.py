@@ -283,3 +283,22 @@ for name, model in models.items():
     print(f"MAE: ${mae:,.2f}")
     print(f"R²: {r2:.2f}")
     print()
+
+# test predictions
+for name, model in models.items():
+
+    model.fit(X_train_all, y_train)
+
+    test_pred = model.predict(X_test_all)
+
+    # perfomance metrics
+    mse = mean_squared_error(y_test, test_pred)
+    rmse = np.sqrt(mse)
+    mae = mean_absolute_error(y_test, test_pred)
+    r2 = r2_score(y_test, test_pred)
+
+    print("Performance on Test Set:")
+    print(f"MSE: ${mse:,.2f}")
+    print(f"RMSE: ${rmse:,.2f}")
+    print(f"MAE: ${mae:,.2f}")
+    print(f"R²: {r2:.2f}")

@@ -122,6 +122,22 @@ for col in multi_input_columns:
     X_val[col] = X_val[col].fillna("None")
     X_test[col] = X_test[col].fillna("None")
 
+# keep only top 20 countries
+top_20_countries = X_train["Country"].value_counts().head(20).index
+
+X_train["Country"] = X_train["Country"].where(
+    X_train["Country"].isin(top_20_countries),
+    "Other"
+)
+X_val["Country"] = X_val["Country"].where(
+    X_val["Country"].isin(top_20_countries),
+    "Other"
+)
+X_test["Country"] = X_test["Country"].where(
+    X_test["Country"].isin(top_20_countries),
+    "Other"
+)
+
 # use encoder for transforming categorical variables into numerical values
 encoder = OneHotEncoder(
     handle_unknown="ignore",
@@ -249,3 +265,60 @@ print(f"MSE: ${mse:,.2f}")
 print(f"RMSE: ${rmse:,.2f}")
 print(f"MAE: ${mae:,.2f}")
 print(f"R²: {r2:.2f}")
+
+# test predictions
+test_pred = model.predict(X_test_all)
+
+# perfomance metrics
+mse = mean_squared_error(y_test, test_pred)
+rmse = np.sqrt(mse)
+mae = mean_absolute_error(y_test, test_pred)
+r2 = r2_score(y_test, test_pred)
+
+print("Performance on Test Set:")
+print(f"MSE: ${mse:,.2f}")
+print(f"RMSE: ${rmse:,.2f}")
+print(f"MAE: ${mae:,.2f}")
+print(f"R²: {r2:.2f}")
+
+# model coefficients
+feature_names = (
+    numerical_columns
+    + binary_columns
+    + encoder.get_feature_names_out(categorical_columns).tolist()
+    + train_languages.columns.tolist()
+    + train_databases.columns.tolist()
+)
+
+coefficients = pd.DataFrame({
+    "Feature": feature_names,
+    "Coefficient": model.coef_
+})
+
+coefficients = coefficients.sort_values(
+    by="Coefficient",
+    ascending=False
+)
+
+print("\n Top 20 positive coefficients")
+print(coefficients.head(20)[['Feature', 'Coefficient']].to_string(index=False))
+print("\n Top 20 negative coefficients")
+print(coefficients.tail(20)[['Feature', 'Coefficient']].to_string(index=False))
+
+print("\nIntercept:")
+print(model.intercept_)
+
+measurable_features = coefficients[
+    (coefficients['Feature'] == "DatabaseHasWorkedWith") |
+    (coefficients['Feature'] == "LanguageHasWorkedWith") |
+    (coefficients['Feature'] == "EdLevel") |
+    (coefficients['Feature'] == "WorkExp") |
+    (coefficients['Feature'] == "YearsCode") |
+    (coefficients['Feature'] == "OrgSize") |
+    (coefficients['Feature'] == "RemoteWork")
+].copy()
+
+measurable_features = measurable_features.sort_values('Coefficient', ascending=False)
+
+print("\n Measurable features")
+print(measurable_features.head(15)[['Feature', 'Coefficient']].to_string(index=False))

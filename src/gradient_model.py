@@ -293,21 +293,3 @@ for name, model in models.items():
     print(f"MAE: ${mae:,.2f}")
     print(f"R²: {r2:.2f}")
     print()
-
-
-# testing
-for name, model in models.items():
-
-    model.fit(X_train_all, y_train)
-
-    y_pred = model.predict(X_test_all)
-
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-    mae = mean_absolute_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
-
-    print(name)
-    print(f"RMSE: ${rmse:,.2f}")
-    print(f"MAE: ${mae:,.2f}")
-    print(f"R²: {r2:.2f}")
-    print()
