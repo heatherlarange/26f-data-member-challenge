@@ -1,4 +1,4 @@
-# EDA on survey data as I build the model
+# EDA on survey data as I build the models
 
 import pandas as pd
 import numpy as np

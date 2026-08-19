@@ -1,4 +1,4 @@
-# first random forest model
+# first random forest model (best)
 
 import pandas as pd
 import numpy as np
@@ -239,7 +239,6 @@ model = RandomForestRegressor(
     n_jobs=-1
 )
 
-# use same preprocessed columns
 model.fit(X_train_all, y_train)
 
 # validation predictions

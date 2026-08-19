@@ -1,4 +1,4 @@
-# gradient model
+# using gradient model
 
 import pandas as pd
 import numpy as np

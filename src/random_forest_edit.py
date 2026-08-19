@@ -1,4 +1,4 @@
-# edited random forest model
+# different variations of random forest model
 
 import pandas as pd
 import numpy as np
