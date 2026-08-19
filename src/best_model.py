@@ -237,79 +237,44 @@ X_val_all = X_val_all.toarray()
 X_test_all = X_test_all.toarray()
 
 
-# create models
-models = {
-
-    "GB 1": HistGradientBoostingRegressor(
-        max_iter=300,
-        learning_rate=0.05,
-        max_leaf_nodes=31,
-        min_samples_leaf=20,
-        l2_regularization=1.0,
-        random_state=42
-    ),
-
-    "GB 2": HistGradientBoostingRegressor(
-        max_iter=500,
-        learning_rate=0.05,
-        max_leaf_nodes=31,
-        min_samples_leaf=20,
-        l2_regularization=1.0,
-        random_state=42
-    ),
-
-    "GB 3": HistGradientBoostingRegressor(
+# create model
+model = HistGradientBoostingRegressor(
         max_iter=300,
         learning_rate=0.03,
         max_leaf_nodes=31,
         min_samples_leaf=20,
         l2_regularization=1.0,
         random_state=42
-    ),
-
-     "GB 4": HistGradientBoostingRegressor(
-        max_iter=300,
-        learning_rate=0.05,
-        max_leaf_nodes=63,
-        min_samples_leaf=20,
-        l2_regularization=1.0,
-        random_state=42
     )
-}
 
-# validate different model types
-for name, model in models.items():
+# validate model
+print("Performance on Validation Set:")
+model.fit(X_train_all, y_train)
 
-    model.fit(X_train_all, y_train)
+y_val_pred = model.predict(X_val_all)
 
-    y_val_pred = model.predict(X_val_all)
+rmse = np.sqrt(mean_squared_error(y_val, y_val_pred))
+mae = mean_absolute_error(y_val, y_val_pred)
+r2 = r2_score(y_val, y_val_pred)
 
-    rmse = np.sqrt(mean_squared_error(y_val, y_val_pred))
-    mae = mean_absolute_error(y_val, y_val_pred)
-    r2 = r2_score(y_val, y_val_pred)
-
-    print(name)
-    print(f"RMSE: ${rmse:,.2f}")
-    print(f"MAE: ${mae:,.2f}")
-    print(f"R²: {r2:.2f}")
-    print()
+print(f"RMSE: ${rmse:,.2f}")
+print(f"MAE: ${mae:,.2f}")
+print(f"R²: {r2:.2f}")
+print()
 
 # test predictions
 print("Performance on Test Set:")
-for name, model in models.items():
+model.fit(X_train_all, y_train)
 
-    model.fit(X_train_all, y_train)
+test_pred = model.predict(X_test_all)
 
-    test_pred = model.predict(X_test_all)
+# perfomance metrics
+mse = mean_squared_error(y_test, test_pred)
+rmse = np.sqrt(mse)
+mae = mean_absolute_error(y_test, test_pred)
+r2 = r2_score(y_test, test_pred)
 
-    # perfomance metrics
-    mse = mean_squared_error(y_test, test_pred)
-    rmse = np.sqrt(mse)
-    mae = mean_absolute_error(y_test, test_pred)
-    r2 = r2_score(y_test, test_pred)
-
-    print(name)
-    print(f"MSE: ${mse:,.2f}")
-    print(f"RMSE: ${rmse:,.2f}")
-    print(f"MAE: ${mae:,.2f}")
-    print(f"R²: {r2:.2f}")
+print(f"MSE: ${mse:,.2f}")
+print(f"RMSE: ${rmse:,.2f}")
+print(f"MAE: ${mae:,.2f}")
+print(f"R²: {r2:.2f}")

@@ -285,6 +285,7 @@ for name, model in models.items():
     print()
 
 # test predictions
+print("Performance on Test Set:")
 for name, model in models.items():
 
     model.fit(X_train_all, y_train)
@@ -297,7 +298,7 @@ for name, model in models.items():
     mae = mean_absolute_error(y_test, test_pred)
     r2 = r2_score(y_test, test_pred)
 
-    print("Performance on Test Set:")
+    print(name)
     print(f"MSE: ${mse:,.2f}")
     print(f"RMSE: ${rmse:,.2f}")
     print(f"MAE: ${mae:,.2f}")
